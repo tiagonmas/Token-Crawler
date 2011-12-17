@@ -1,7 +1,7 @@
-www.ocasiao.pt
-http://www.novagente.pt 
-www.sapo.pt
-blogs.sapo.pt
+	www.ocasiao.pt
+	http://www.novagente.pt 
+	www.sapo.pt
+	blogs.sapo.pt
 diarioeconomico.com
 noticias.sapo.pt
 desporto.sapo.pt
