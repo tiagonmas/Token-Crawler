@@ -61,6 +61,7 @@ namespace TokenCrawler
                         { //it was not found on the main HTML page, check all referred scripts
                             HtmlDocument doc = new HtmlDocument();
                             doc.LoadHtml(html);
+                            
                             var head = doc.DocumentNode.Descendants().Where(n => n.Name == "head").FirstOrDefault();
                             foreach (var script in doc.DocumentNode.Descendants("script").ToArray()) 
                             {
@@ -96,7 +97,9 @@ namespace TokenCrawler
                                 }
 
                             }
+                            doc = null; //release doc
                         } else {foundList.Add(url);}
+
                     }
                     catch (System.Net.WebException exc)
                     {
@@ -112,7 +115,7 @@ namespace TokenCrawler
                 { Console.WriteLine(String.Format("\n\n{0} was not found on any of the sites searched:\n", cmdLine.Token)); Console.ResetColor();}
                 else
                 { 
-                    Console.WriteLine(String.Format("\n\n{0} was found on the following {1} sites:\n", cmdLine.Token, foundList.Count)); 
+                    Console.WriteLine(String.Format("\n\n\"{0}\" was found on the following {1} sites:\n", cmdLine.Token, foundList.Count)); 
                     Console.ResetColor();
                     foreach (string str in foundList)
                     {
@@ -157,11 +160,11 @@ namespace TokenCrawler
             if (found > -1)
             {
                 Console.ForegroundColor = ConsoleColor.Green;
-                Inform("Token Found!",1);
+                Inform("Token Found: " + SubStringInform(outHTML, token), 1);
                 Console.ResetColor();
-                Inform("\n:" + SubStringInform(outHTML,token), 1);
                 Console.Write("\n\n");
             }
+            client = null; //release client
             return found > -1;
         }
 
@@ -174,7 +177,7 @@ namespace TokenCrawler
         /// <returns></returns>
         private static string SubStringInform(string html, string token)
         {   const int subsize=50;  //desired size of substring to show
-            html=html.Replace("\n", "");
+            html = html.Replace(Environment.NewLine, "");
             int found=html.IndexOf(token); //find it again because we took the \n
             if (found==0)
                 if (html.Length>subsize)
@@ -203,7 +206,7 @@ namespace TokenCrawler
         /// <returns></returns>
         private static string PrepURL(string siteUrl)
         {
-            if (siteUrl.Contains("http://"))
+            if (siteUrl.Contains("http://") || siteUrl.Contains("https://"))
                 return siteUrl;
             else
                 return "http://" + siteUrl;
