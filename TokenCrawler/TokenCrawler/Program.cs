@@ -66,6 +66,9 @@ namespace TokenCrawler
                             {
                                 string script_url=String.Empty;
 
+                                //show something is happening if we are in verbose=0 mode
+                                if (cmdLine.Verbose <2) Console.Write(".");
+
                                 //Console.Write(script.Value);
                                 HtmlAttribute att = script.Attributes["src"];
                                 if (att!=null)
@@ -86,8 +89,9 @@ namespace TokenCrawler
                                     }
                                     catch (System.Net.WebException exc)
                                     {
-                                        Inform(String.Format("Error. Unable to open script {0}", exc.Message),1);
-
+                                        Console.ForegroundColor = ConsoleColor.Red;
+                                        Inform(String.Format("\tError loading {0}\n", script_url), 1);
+                                        Console.ResetColor();
                                     }
                                 }
 
@@ -96,8 +100,9 @@ namespace TokenCrawler
                     }
                     catch (System.Net.WebException exc)
                     {
+                        Console.ForegroundColor = ConsoleColor.Red;
                         Console.WriteLine("Error. Unable to open site {0}", exc.Message);
-                        
+                        Console.ResetColor();
                     }
                 }
 
@@ -144,8 +149,8 @@ namespace TokenCrawler
             int found = outHTML.IndexOf(token);
             if (found > -1)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Inform("\nFound!",1);
+                Console.ForegroundColor = ConsoleColor.Green;
+                Inform("Token Found!",1);
                 Console.ResetColor();
                 Inform("\n" + outHTML.Substring(found, 50).Replace("\n", ""), 2);
                 Console.Write("\n\n");
