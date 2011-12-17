@@ -7,7 +7,7 @@ using Plossum.CommandLine;
 namespace TokenCrawler
 {
 
-    [CommandLineManager(ApplicationName = "\nHitLinks Site Crawler",
+    [CommandLineManager(ApplicationName = "\nToken Crawler",
         Copyright = "This utility will crawl the websites refered in txt file and searches for a specific token in the HMTL or in the js files used by the site")]
     class CmdLineOptions
     {
