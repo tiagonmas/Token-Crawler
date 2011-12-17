@@ -109,7 +109,7 @@ namespace TokenCrawler
                 ///Dump found files
                 Console.ForegroundColor = ConsoleColor.Blue;
                 if (foundList.Count == 0)
-                { Console.WriteLine(String.Format("\n\n{0} was not found on any of the sites searchced:\n", cmdLine.Token)); Console.ResetColor();}
+                { Console.WriteLine(String.Format("\n\n{0} was not found on any of the sites searched:\n", cmdLine.Token)); Console.ResetColor();}
                 else
                 { 
                     Console.WriteLine(String.Format("\n\n{0} was found on the following {1} sites:\n", cmdLine.Token, foundList.Count)); 
