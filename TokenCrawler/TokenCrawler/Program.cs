@@ -59,6 +59,8 @@ namespace TokenCrawler
                         string html;
                         if (!DownloadAndFindToken(url,cmdLine.Token,out html))
                         { //it was not found on the main HTML page, check all referred scripts
+
+                            #region CheckInternalScripts
                             HtmlDocument doc = new HtmlDocument();
                             doc.LoadHtml(html);
                             
@@ -98,6 +100,9 @@ namespace TokenCrawler
 
                             }
                             doc = null; //release doc
+
+                            #endregion
+
                         } else {foundList.Add(url);}
 
                     }
@@ -109,6 +114,7 @@ namespace TokenCrawler
                     }
                 }
 
+                #region DumpFoundFiles
                 ///Dump found files
                 Console.ForegroundColor = ConsoleColor.Blue;
                 if (foundList.Count == 0)
@@ -121,9 +127,9 @@ namespace TokenCrawler
                     {
                         Console.WriteLine("\t"+str);
                     }
-                
+
                 }
-                
+                #endregion
             }
             catch (System.IO.FileNotFoundException exc)
             {
