@@ -87,7 +87,7 @@ namespace TokenCrawler
                                             break;
                                         }
                                     }
-                                    catch (System.Net.WebException exc)
+                                    catch (System.Net.WebException)
                                     {
                                         Console.ForegroundColor = ConsoleColor.Red;
                                         Inform(String.Format("\tError loading {0}\n", script_url), 1);
@@ -108,12 +108,19 @@ namespace TokenCrawler
 
                 ///Dump found files
                 Console.ForegroundColor = ConsoleColor.Blue;
-                Console.WriteLine(String.Format("\n\n{0} was found on the following {1} sites:\n", cmdLine.Token, foundList.Count));
-                Console.ResetColor();
-                foreach (string str in foundList)
-                {
-                    Console.WriteLine("\t"+str);
+                if (foundList.Count == 0)
+                { Console.WriteLine(String.Format("\n\n{0} was not found on any of the sites searchced:\n", cmdLine.Token)); Console.ResetColor();}
+                else
+                { 
+                    Console.WriteLine(String.Format("\n\n{0} was found on the following {1} sites:\n", cmdLine.Token, foundList.Count)); 
+                    Console.ResetColor();
+                    foreach (string str in foundList)
+                    {
+                        Console.WriteLine("\t"+str);
+                    }
+                
                 }
+                
             }
             catch (System.IO.FileNotFoundException exc)
             {
@@ -152,12 +159,31 @@ namespace TokenCrawler
                 Console.ForegroundColor = ConsoleColor.Green;
                 Inform("Token Found!",1);
                 Console.ResetColor();
-                Inform("\n" + outHTML.Substring(found, 50).Replace("\n", ""), 2);
+                Inform("\n:" + SubStringInform(outHTML,token), 1);
                 Console.Write("\n\n");
             }
             return found > -1;
         }
 
+        /// <summary>
+        /// Get the substring of the original string that contains the token, in order to show where the token was found
+        /// </summary>
+        /// <param name="html">the original html</param>
+        /// <param name="token">the token that was found</param>
+        /// <param name="found">where the token was found</param>
+        /// <returns></returns>
+        private static string SubStringInform(string html, string token)
+        {   const int subsize=50;  //desired size of substring to show
+            html=html.Replace("\n", "");
+            int found=html.IndexOf(token); //find it again because we took the \n
+            if (found==0)
+                if (html.Length>subsize)
+                    return html.Substring(0,subsize);
+                else return token;
+            if (found + subsize >= html.Length)
+                return html.Substring(found, html.Length-found);
+            return html.Substring(found, subsize);
+        }
 
         /// <summary>
         /// Opens a File, reads all lines and returns the contents split by \r and \n
