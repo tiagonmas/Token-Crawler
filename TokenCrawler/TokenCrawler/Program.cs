@@ -97,7 +97,9 @@ namespace TokenCrawler
                                     if (att != null)
                                     {
                                         //check the absolute path to the script
-                                        if (att.Value.StartsWith("http")) script_url = att.Value;
+                                        string initialchars = att.Value.Substring(0, 5).ToLower();
+                                        if (initialchars.StartsWith("http") || initialchars.StartsWith("https")) script_url = att.Value;
+                                        else if (att.Value.StartsWith("//")) script_url = "http:" + att.Value;
                                         else if (att.Value.StartsWith("/")) script_url = url + att.Value;
                                         else script_url = url + "/" + att.Value; //TO DO: take care of relative urls
 
