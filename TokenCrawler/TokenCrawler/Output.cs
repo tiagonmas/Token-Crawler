@@ -5,6 +5,9 @@ namespace TokenCrawler
 {
     class Output
     {
+        /// <summary>
+        /// This class takes care of writing to a file the results of the execution of the program
+        /// </summary>
         TextWriter tw;
         private string _fileName;
         public string FileName { get {return _fileName;} }
