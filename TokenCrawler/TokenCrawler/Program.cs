@@ -5,6 +5,7 @@ using System.IO;
 using System.Net;
 using HtmlAgilityPack;
 using System.Collections.Generic;
+using System.Text;
 
 namespace TokenCrawler
 {
@@ -12,8 +13,10 @@ namespace TokenCrawler
     {
         static int VerboseLevel;
 
-        static List<string> foundList;
- 
+        static Dictionary<string, string> findings; //will contain sites that satisfy criteria, and an excert
+        
+        static Output output; //will write to file findings
+
         static int Main(string[] args)
         {
             #region CommandLineArgsProcessing
@@ -33,99 +36,117 @@ namespace TokenCrawler
                 return -1;
             }
             VerboseLevel = cmdLine.Verbose;
-            Console.WriteLine("Running tool with the following commands:");
-            Console.WriteLine("Token: {0}", cmdLine.Token);
-            Console.WriteLine("File: {0}", cmdLine.File);
-            Console.WriteLine("Verbose Level: {0}\n", cmdLine.Verbose);
+
+            //Create output file
+            if (String.IsNullOrEmpty(cmdLine.Output))
+            { output = new Output(); }
+            else
+            { output = new Output(cmdLine.Output); }
+
+            #region ShowInitialParametersinConsoleAndFile
+            StringBuilder str = new StringBuilder();
             
+            str.Append("Running tool with the following commands:\n");
+            str.Append(String.Format("\tToken: {0}\n", cmdLine.Token));
+            str.Append(String.Format("\tFile: {0}\n", cmdLine.File));
+            str.Append(String.Format("\tVerbose Level: {0}\n", cmdLine.Verbose));
+            str.Append(String.Format("\tOutput Results to: {0}\n", output.FileName));
+
+            output.WriteLine(str.ToString());
+            Console.WriteLine(str.ToString());
+            str = null;
+            #endregion
             #endregion
 
             #region ReadSitesFromFileAndCrawl
 
             try
             {
-                foundList = new List<string>(); //List to store urls that contain the token
+                
+                findings= new Dictionary<string, string>();
 
-                foreach (string siteUrl in GetSitesFromFile(cmdLine.File))
-                {
-                    var url = PrepURL(siteUrl); //check for http
-                    Inform(String.Format("\nCrawling {0} \n", url), 1);
 
-                    //show something is happening if we are in verbose=0 mode
-                    if (cmdLine.Verbose == 0) Console.Write(".");
-
-                    try
+                    foreach (string siteUrl in GetSitesFromFile(cmdLine.File))
                     {
-                        string html;
-                        if (!DownloadAndFindToken(url,cmdLine.Token,out html))
-                        { //it was not found on the main HTML page, check all referred scripts
+                        var url = PrepURL(siteUrl); //check for http
+                        Inform(String.Format("\nCrawling {0} \n", url), 1);
 
-                            #region CheckInternalScripts
-                            HtmlDocument doc = new HtmlDocument();
-                            doc.LoadHtml(html);
-                            
-                            var head = doc.DocumentNode.Descendants().Where(n => n.Name == "head").FirstOrDefault();
-                            foreach (var script in doc.DocumentNode.Descendants("script").ToArray()) 
-                            {
-                                string script_url=String.Empty;
+                        //show something is happening if we are in verbose=0 mode
+                        if (cmdLine.Verbose == 0) Console.Write(".");
 
-                                //show something is happening if we are in verbose=0 mode
-                                if (cmdLine.Verbose <2) Console.Write(".");
+                        try
+                        {
+                            string html, excert;
+                            if (!DownloadAndFindToken(url, cmdLine.Token, out html, out excert))
+                            { //it was not found on the main HTML page, check all referred scripts
 
-                                //Console.Write(script.Value);
-                                HtmlAttribute att = script.Attributes["src"];
-                                if (att!=null)
+                                #region CheckInternalScripts
+                                HtmlDocument doc = new HtmlDocument();
+                                doc.LoadHtml(html);
+
+                                var head = doc.DocumentNode.Descendants().Where(n => n.Name == "head").FirstOrDefault();
+                                foreach (var script in doc.DocumentNode.Descendants("script").ToArray())
                                 {
-                                    //check the absolute path to the script
-                                    if (att.Value.StartsWith("http")) script_url = att.Value;
-                                    else if (att.Value.StartsWith("/")) script_url = url + att.Value;
-                                    else script_url = url + "/" + att.Value; //TO DO: take care of relative urls
+                                    string script_url = String.Empty;
 
-                                    Inform(String.Format("\t{0}\n", script_url), 2);
-                                    try
+                                    //show something is happening if we are in verbose=0 mode
+                                    if (cmdLine.Verbose < 2) Console.Write(".");
+
+                                    //Console.Write(script.Value);
+                                    HtmlAttribute att = script.Attributes["src"];
+                                    if (att != null)
                                     {
-                                        if (DownloadAndFindToken(script_url, cmdLine.Token, out html))
+                                        //check the absolute path to the script
+                                        if (att.Value.StartsWith("http")) script_url = att.Value;
+                                        else if (att.Value.StartsWith("/")) script_url = url + att.Value;
+                                        else script_url = url + "/" + att.Value; //TO DO: take care of relative urls
+
+                                        Inform(String.Format("\t{0}\n", script_url), 2);
+                                        try
                                         {
-                                            foundList.Add(url);
-                                            break;
+                                            if (DownloadAndFindToken(script_url, cmdLine.Token, out html, out excert))
+                                            {
+                                                RecordFoundSite(script_url, excert);
+                                                break;
+                                            }
+                                        }
+                                        catch (System.Exception)
+                                        {
+                                            Console.ForegroundColor = ConsoleColor.Red;
+                                            Inform(String.Format("\tError loading {0}\n", script_url), 1);
+                                            Console.ResetColor();
                                         }
                                     }
-                                    catch (System.Net.WebException)
-                                    {
-                                        Console.ForegroundColor = ConsoleColor.Red;
-                                        Inform(String.Format("\tError loading {0}\n", script_url), 1);
-                                        Console.ResetColor();
-                                    }
+
                                 }
+                                doc = null; //release doc
+
+                                #endregion
 
                             }
-                            doc = null; //release doc
+                            else { RecordFoundSite(url, excert); }
 
-                            #endregion
-
-                        } else {foundList.Add(url);}
-
+                        }
+                        catch (System.Net.WebException exc)
+                        {
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.WriteLine("Error. Unable to open site {0}", exc.Message);
+                            Console.ResetColor();
+                        }
                     }
-                    catch (System.Net.WebException exc)
-                    {
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine("Error. Unable to open site {0}", exc.Message);
-                        Console.ResetColor();
-                    }
-                }
 
                 #region DumpFoundFiles
                 ///Dump found files
                 Console.ForegroundColor = ConsoleColor.Blue;
-                if (foundList.Count == 0)
-                { Console.WriteLine(String.Format("\n\n{0} was not found on any of the sites searched:\n", cmdLine.Token)); Console.ResetColor();}
+                if (findings.Count == 0)
+                { Console.WriteLine("\n\n{0} was not found on any of the sites searched:\n", cmdLine.Token); Console.ResetColor();}
                 else
                 { 
-                    Console.WriteLine(String.Format("\n\n\"{0}\" was found on the following {1} sites:\n", cmdLine.Token, foundList.Count)); 
+                    Console.WriteLine("\n\n\"{0}\" was found on the following {1} sites:\n", cmdLine.Token, findings.Count); 
                     Console.ResetColor();
-                    foreach (string str in foundList)
+                    foreach (string foundit in findings.Keys)
                     {
-                        Console.WriteLine("\t"+str);
+                        Console.WriteLine("\t"+foundit);
                     }
 
                 }
@@ -149,6 +170,12 @@ namespace TokenCrawler
 
 
         #region HelpFunctions
+
+        private static void RecordFoundSite(string url, string excert)
+        {
+            findings.Add(url, excert);
+            output.WriteLine(String.Format("{0}\t{1}", url, excert));
+        }
         /// <summary>
         /// Download the html of a given url and check if it contains a token
         /// </summary>
@@ -156,8 +183,9 @@ namespace TokenCrawler
         /// <param name="token"></param>
         /// <param name="outHTML"></param>
         /// <returns></returns>
-        private static bool DownloadAndFindToken(string url,string token, out string outHTML)
+        private static bool DownloadAndFindToken(string url,string token, out string outHTML, out string excert)
         {
+            excert = null;
             WebClient client = new WebClient();
             //some urls have spaces and browsers support. Need to take spaces out of urls
             url=url.Replace(" ", "");
@@ -165,12 +193,14 @@ namespace TokenCrawler
             int found = outHTML.IndexOf(token);
             if (found > -1)
             {
+                excert = SubStringInform(outHTML, token);
                 Console.ForegroundColor = ConsoleColor.Green;
-                Inform("Token Found: " + SubStringInform(outHTML, token), 1);
+                Inform("Token Found: " + excert, 1);
                 Console.ResetColor();
                 Console.Write("\n\n");
             }
             client = null; //release client
+            
             return found > -1;
         }
 
