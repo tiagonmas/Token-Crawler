@@ -12,10 +12,9 @@ namespace TokenCrawler
     class Program
     {
         static int VerboseLevel;
-
         static Dictionary<string, string> findings; //will contain sites that satisfy criteria, and an excert
-        
         static Output output; //will write to file findings
+
 
         static int Main(string[] args)
         {
