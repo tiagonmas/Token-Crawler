@@ -44,8 +44,19 @@ namespace TokenCrawler
             }
         }
 
+        [CommandLineOption(Description = "The file to output the results of execution to")]
+        public string Output
+        {
+            get { return mOutput; }
+            set
+            {
+                mOutput = value;
+            }
+        }
+
         private string mFile="sites.txt";
         private string mToken="hitslink";
+        private string mOutput = "";
         private int mVerbose=1;
     }
 
