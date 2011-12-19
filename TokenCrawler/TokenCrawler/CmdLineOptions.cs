@@ -22,7 +22,7 @@ namespace TokenCrawler
             }
         }
 
-        [CommandLineOption(Description = "Specifies the token to be searched for in the crawled files", MinOccurs = 0)]
+        [CommandLineOption(Description = "Specifies the token (can be defined as a regular expression) to be searched for in the crawled files", MinOccurs = 1)]
         public string Token
         {
             get { return mToken; }
@@ -42,6 +42,16 @@ namespace TokenCrawler
             }
         }
 
+        [CommandLineOption(Description = "The maximum number of result excerts to show when the pattern is found. 0 means unlimited. ")]
+        public int MaxResults
+        {
+            get { return mMaxResults; }
+            set
+            {
+                mMaxResults = value;
+            }
+        }
+
         [CommandLineOption(Description = "The file to output the results of execution to")]
         public string Output
         {
@@ -55,6 +65,7 @@ namespace TokenCrawler
         private string mFile="sites.txt";
         private string mToken="hitslink";
         private string mOutput = "";
+        private int mMaxResults = 5;
         private int mVerbose=1;
     }
 

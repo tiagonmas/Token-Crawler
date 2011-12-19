@@ -6,12 +6,15 @@ using System.Net;
 using HtmlAgilityPack;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace TokenCrawler
 {
     class Program
     {
-        static int VerboseLevel;
+        static CmdLineOptions cmdLine;
+        //static int VerboseLevel;
+        static Regex regexToken;
         static Dictionary<string, string> findings; //will contain sites that satisfy criteria, and an excert
         static Output output; //will write to file findings
 
@@ -19,7 +22,7 @@ namespace TokenCrawler
         static int Main(string[] args)
         {
             #region CommandLineArgsProcessing
-            CmdLineOptions cmdLine = new CmdLineOptions();
+            cmdLine = new CmdLineOptions();
             CommandLineParser parser = new CommandLineParser(cmdLine);
             parser.Parse();
             Console.WriteLine(parser.UsageInfo.GetHeaderAsString(78));
@@ -34,7 +37,8 @@ namespace TokenCrawler
                 Console.WriteLine(parser.UsageInfo.GetErrorsAsString(78));
                 return -1;
             }
-            VerboseLevel = cmdLine.Verbose;
+
+            
 
             //Create output file
             if (String.IsNullOrEmpty(cmdLine.Output))
@@ -42,11 +46,21 @@ namespace TokenCrawler
             else
             { output = new Output(cmdLine.Output); }
 
+            try
+            {
+                regexToken = new Regex(cmdLine.Token);
+            }
+            catch (System.Exception exc)
+            {
+                Console.WriteLine("Error parsing Token Regular Expression: " + cmdLine.Token + ".\nDetails:" + exc.Message);
+                return -1;
+            }
+            
             #region ShowInitialParametersinConsoleAndFile
             StringBuilder str = new StringBuilder();
             
             str.Append("Running tool with the following commands:\n");
-            str.Append(String.Format("\tToken: {0}\n", cmdLine.Token));
+            str.Append(String.Format("\tRegex Token: {0}\n", cmdLine.Token));
             str.Append(String.Format("\tFile: {0}\n", cmdLine.File));
             str.Append(String.Format("\tVerbose Level: {0}\n", cmdLine.Verbose));
             str.Append(String.Format("\tOutput Results to: {0}\n", output.FileName));
@@ -174,7 +188,11 @@ namespace TokenCrawler
 
         private static void RecordFoundSite(string url, string excert)
         {
-            findings.Add(url, excert);
+            try
+            {
+                findings.Add(url, excert);
+            }
+            catch(System.ArgumentException){}; //do nothing if it was already in the dictionary
             output.WriteLine(String.Format("{0}\t{1}", url, excert));
         }
         /// <summary>
@@ -191,18 +209,35 @@ namespace TokenCrawler
             //some urls have spaces and browsers support. Need to take spaces out of urls
             url=url.Replace(" ", "");
             outHTML = client.DownloadString(url);
-            int found = outHTML.IndexOf(token);
-            if (found > -1)
+            bool found = regexToken.IsMatch(outHTML);
+            if (found)
             {
-                excert = SubStringInform(outHTML, token);
+                StringBuilder sb = new StringBuilder();
+                MatchCollection matches = regexToken.Matches(outHTML);
+
+                
+                for (int i = 0; i < matches.Count; i++)
+                {
+                    sb.Append("\t"+matches[i] + ": " + SubStringInform(outHTML, matches[i].Index).Replace("\n", "_").Replace("\r", "_") + "\n");
+                    //did we reach max results to show ?
+                    
+                    if (cmdLine.MaxResults!=0 && cmdLine.MaxResults <= i+1) break;
+                }
+                excert = sb.ToString();
+
+                //excert = SubStringInform(outHTML, token);
+
                 Console.ForegroundColor = ConsoleColor.Green;
-                Inform("Token Found: " + excert, 1);
+                if (cmdLine.MaxResults > matches.Count)
+                { Inform("Token Found in " + matches.Count + " places:" + "\n"+excert, 1); }
+                else
+                { Inform("Token Found in " + matches.Count + " places. Showing only " + cmdLine.MaxResults + "\n" + excert, 1); }
                 Console.ResetColor();
                 Console.Write("\n\n");
             }
             client = null; //release client
             
-            return found > -1;
+            return found;
         }
 
         /// <summary>
@@ -212,17 +247,23 @@ namespace TokenCrawler
         /// <param name="token">the token that was found</param>
         /// <param name="found">where the token was found</param>
         /// <returns></returns>
-        private static string SubStringInform(string html, string token)
+        private static string SubStringInform(string html, int found)
         {   const int subsize=50;  //desired size of substring to show
-            html = html.Replace(Environment.NewLine, "");
-            int found=html.IndexOf(token); //find it again because we took the \n
-            if (found==0)
+            
+            //start of text
+            if (found==0) 
                 if (html.Length>subsize)
                     return html.Substring(0,subsize);
-                else return token;
-            if (found + subsize >= html.Length)
+                else return html.Substring(found, html.Length);
+            //end of text
+            else if (found + subsize >= html.Length)
                 return html.Substring(found, html.Length-found);
-            return html.Substring(found, subsize);
+            //middle of string
+            else if (found - subsize/2 < 0) 
+                return html.Substring(0, subsize);
+
+            return html.Substring(found - subsize / 2, subsize);
+
         }
 
         /// <summary>
@@ -256,7 +297,7 @@ namespace TokenCrawler
         /// <param name="level">The threshold level to output or not</param>
         private static void Inform(string str, int level)
         {
-            if (level <= VerboseLevel) Console.Write(str);
+            if (level <= cmdLine.Verbose) Console.Write(str);
         }
         #endregion
     }
