@@ -28,6 +28,11 @@
     <UpdatePeriodically>false</UpdatePeriodically>
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
+    <SupportUrl>http://tokencrawler.codeplex.com</SupportUrl>
+    <ErrorReportUrl>http://tokencrawler.codeplex.com/</ErrorReportUrl>
+    <ProductName>TokenCrawler</ProductName>
+    <PublisherName>Tiago Andrade e Silva</PublisherName>
+    <SuiteName>TokenCrawler</SuiteName>
     <ApplicationRevision>0</ApplicationRevision>
     <ApplicationVersion>1.2.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
