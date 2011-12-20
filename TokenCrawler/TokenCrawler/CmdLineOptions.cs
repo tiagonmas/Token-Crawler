@@ -12,7 +12,7 @@ namespace TokenCrawler
         [CommandLineOption(Description = "Displays this help text")]
         public bool Help = false;
 
-        [CommandLineOption(Description = "Specifies the input file that contains the links to crawl (one per line)", MinOccurs = 0)]
+        [CommandLineOption(Description = "Specifies the input file that contains the links to crawl (one per line) (defaults to sites.txt)", MinOccurs = 0)]
         public string File
         {
             get { return mFile; }
@@ -32,7 +32,17 @@ namespace TokenCrawler
             }
         }
 
-        [CommandLineOption(Description = "Identify verbose level:0 minimum, 1 normal, 2 full")]
+        [CommandLineOption(Description = "Specifies the token (can be defined as a regular expression) to be searched for in the crawled files (default is false)", MinOccurs = 1)]
+        public bool IgnoreCase
+        {
+            get { return mIgnoreCase; }
+            set
+            {
+                mIgnoreCase = value;
+            }
+        }
+
+        [CommandLineOption(Description = "Identify verbose level:0 minimum, 1 normal, 2 full (defaults to 1)")]
         public int Verbose
         {
             get { return mVerbose; }
@@ -42,7 +52,7 @@ namespace TokenCrawler
             }
         }
 
-        [CommandLineOption(Description = "The maximum number of result excerts to show when the pattern is found. 0 means unlimited. ")]
+        [CommandLineOption(Description = "The maximum number of result excerts to show when the pattern is found. 0 means unlimited.(defaults to 5) ")]
         public int MaxResults
         {
             get { return mMaxResults; }
@@ -63,10 +73,11 @@ namespace TokenCrawler
         }
 
         private string mFile="sites.txt";
-        private string mToken="hitslink";
+        private string mToken="";
         private string mOutput = "";
         private int mMaxResults = 5;
         private int mVerbose=1;
+        private bool mIgnoreCase = false;
     }
 
 }
