@@ -21,6 +21,9 @@ namespace TokenCrawler
 
         static int Main(string[] args)
         {
+            int crawlnum = 0; //number of sites crawled
+            int crawltotal; //number of sites to crawl.
+
             #region CommandLineArgsProcessing
             cmdLine = new CmdLineOptions();
             CommandLineParser parser = new CommandLineParser(cmdLine);
@@ -64,6 +67,7 @@ namespace TokenCrawler
             str.Append(String.Format("\tFile: {0}\n", cmdLine.File));
             str.Append(String.Format("\tVerbose Level: {0}\n", cmdLine.Verbose));
             str.Append(String.Format("\tOutput Results to: {0}\n", output.FileName));
+            str.Append(String.Format("\tMaxResults: {0}\n", cmdLine.MaxResults));
 
             output.WriteLine(str.ToString());
             Console.WriteLine(str.ToString());
@@ -78,77 +82,80 @@ namespace TokenCrawler
                 
                 findings= new Dictionary<string, string>();
 
+                string[] sites = GetSitesFromFile(cmdLine.File);
+                crawltotal=sites.Count();
+                Console.WriteLine(String.Format("Started crawling {0} sites\n",crawltotal));
+                foreach (string siteUrl in sites)
+                {
+                    crawlnum++;
+                    var url = PrepURL(siteUrl); //check for http
+                    Inform(String.Format("\nCrawling ({0}/{1}) {2} \n", crawlnum, crawltotal,url), 1);
 
-                    foreach (string siteUrl in GetSitesFromFile(cmdLine.File))
+                    //show something is happening if we are in verbose=0 mode
+                    if (cmdLine.Verbose == 0) Console.Write(".");
+
+                    try
                     {
-                        var url = PrepURL(siteUrl); //check for http
-                        Inform(String.Format("\nCrawling {0} \n", url), 1);
+                        string html, excert;
+                        if (!DownloadAndFindToken(url, cmdLine.Token, out html, out excert))
+                        { //it was not found on the main HTML page, check all referred scripts
 
-                        //show something is happening if we are in verbose=0 mode
-                        if (cmdLine.Verbose == 0) Console.Write(".");
+                            #region CheckInternalScripts
+                            HtmlDocument doc = new HtmlDocument();
+                            doc.LoadHtml(html);
 
-                        try
-                        {
-                            string html, excert;
-                            if (!DownloadAndFindToken(url, cmdLine.Token, out html, out excert))
-                            { //it was not found on the main HTML page, check all referred scripts
+                            var head = doc.DocumentNode.Descendants().Where(n => n.Name == "head").FirstOrDefault();
+                            foreach (var script in doc.DocumentNode.Descendants("script").ToArray())
+                            {
+                                string script_url = String.Empty;
 
-                                #region CheckInternalScripts
-                                HtmlDocument doc = new HtmlDocument();
-                                doc.LoadHtml(html);
+                                //show something is happening if we are in verbose=0 mode
+                                if (cmdLine.Verbose < 2) Console.Write(".");
 
-                                var head = doc.DocumentNode.Descendants().Where(n => n.Name == "head").FirstOrDefault();
-                                foreach (var script in doc.DocumentNode.Descendants("script").ToArray())
+                                //Console.Write(script.Value);
+                                HtmlAttribute att = script.Attributes["src"];
+                                if (att != null)
                                 {
-                                    string script_url = String.Empty;
+                                    //check the absolute path to the script
+                                    string initialchars = att.Value.Substring(0, 5).ToLower();
+                                    if (initialchars.StartsWith("http") || initialchars.StartsWith("https")) script_url = att.Value;
+                                    else if (att.Value.StartsWith("//")) script_url = "http:" + att.Value;
+                                    else if (att.Value.StartsWith("/")) script_url = url + att.Value;
+                                    else script_url = url + "/" + att.Value; //TO DO: take care of relative urls
 
-                                    //show something is happening if we are in verbose=0 mode
-                                    if (cmdLine.Verbose < 2) Console.Write(".");
-
-                                    //Console.Write(script.Value);
-                                    HtmlAttribute att = script.Attributes["src"];
-                                    if (att != null)
+                                    Inform(String.Format("\t{0}\n", script_url), 2);
+                                    try
                                     {
-                                        //check the absolute path to the script
-                                        string initialchars = att.Value.Substring(0, 5).ToLower();
-                                        if (initialchars.StartsWith("http") || initialchars.StartsWith("https")) script_url = att.Value;
-                                        else if (att.Value.StartsWith("//")) script_url = "http:" + att.Value;
-                                        else if (att.Value.StartsWith("/")) script_url = url + att.Value;
-                                        else script_url = url + "/" + att.Value; //TO DO: take care of relative urls
-
-                                        Inform(String.Format("\t{0}\n", script_url), 2);
-                                        try
+                                        if (DownloadAndFindToken(script_url, cmdLine.Token, out html, out excert))
                                         {
-                                            if (DownloadAndFindToken(script_url, cmdLine.Token, out html, out excert))
-                                            {
-                                                RecordFoundSite(script_url, excert);
-                                                break;
-                                            }
-                                        }
-                                        catch (System.Exception)
-                                        {
-                                            Console.ForegroundColor = ConsoleColor.Red;
-                                            Inform(String.Format("\tError loading {0}\n", script_url), 1);
-                                            Console.ResetColor();
+                                            RecordFoundSite(script_url, excert);
+                                            break;
                                         }
                                     }
-
+                                    catch (System.Exception)
+                                    {
+                                        Console.ForegroundColor = ConsoleColor.Red;
+                                        Inform(String.Format("\tError loading {0}\n", script_url), 1);
+                                        Console.ResetColor();
+                                    }
                                 }
-                                doc = null; //release doc
-
-                                #endregion
 
                             }
-                            else { RecordFoundSite(url, excert); }
+                            doc = null; //release doc
+
+                            #endregion
 
                         }
-                        catch (System.Net.WebException exc)
-                        {
-                            Console.ForegroundColor = ConsoleColor.Red;
-                            Console.WriteLine("Error. Unable to open site {0}", exc.Message);
-                            Console.ResetColor();
-                        }
+                        else { RecordFoundSite(url, excert); }
+
                     }
+                    catch (System.Net.WebException exc)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("Error. Unable to open site {0}", exc.Message);
+                        Console.ResetColor();
+                    }
+                }
 
                 #region DumpFoundFiles
                 ///Dump found files
