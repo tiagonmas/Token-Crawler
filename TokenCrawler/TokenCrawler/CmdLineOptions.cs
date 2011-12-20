@@ -32,7 +32,7 @@ namespace TokenCrawler
             }
         }
 
-        [CommandLineOption(Description = "Specifies the token (can be defined as a regular expression) to be searched for in the crawled files (default is false)", MinOccurs = 1)]
+        [CommandLineOption(Description = "Specifies the token (can be defined as a regular expression) to be searched for in the crawled files (default is false)", MinOccurs = 0)]
         public bool IgnoreCase
         {
             get { return mIgnoreCase; }
