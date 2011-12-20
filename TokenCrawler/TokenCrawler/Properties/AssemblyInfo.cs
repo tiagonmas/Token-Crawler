@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("TokenCrawler")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Token Crawler is a command line utility that crawls websites refered in txt file and searches for a specific pattern in the HMTL and in the js files used by the site.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Tiago Andrade e Silva")]
 [assembly: AssemblyProduct("TokenCrawler")]
@@ -32,5 +32,5 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.2.0.0")]
-[assembly: AssemblyFileVersion("1.2.0.0")]
+[assembly: AssemblyVersion("1.3.0.0")]
+[assembly: AssemblyFileVersion("1.3.0.0")]
