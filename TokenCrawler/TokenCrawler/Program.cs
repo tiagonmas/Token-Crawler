@@ -51,7 +51,10 @@ namespace TokenCrawler
 
             try
             {
-                regexToken = new Regex(cmdLine.Token);
+                if (cmdLine.IgnoreCase)
+                { regexToken = new Regex(cmdLine.Token, RegexOptions.IgnoreCase); }
+                else
+                {regexToken = new Regex(cmdLine.Token);}
             }
             catch (System.Exception exc)
             {
@@ -64,6 +67,7 @@ namespace TokenCrawler
             
             str.Append("Running tool with the following commands:\n");
             str.Append(String.Format("\tRegex Token: {0}\n", cmdLine.Token));
+            str.Append(String.Format("\tIgnoreCase: {0}\n", cmdLine.IgnoreCase));
             str.Append(String.Format("\tFile: {0}\n", cmdLine.File));
             str.Append(String.Format("\tVerbose Level: {0}\n", cmdLine.Verbose));
             str.Append(String.Format("\tOutput Results to: {0}\n", output.FileName));
@@ -114,7 +118,7 @@ namespace TokenCrawler
 
                                 //Console.Write(script.Value);
                                 HtmlAttribute att = script.Attributes["src"];
-                                if (att != null)
+                                if (att!=null && !String.IsNullOrEmpty(att.Value))
                                 {
                                     //check the absolute path to the script
                                     string initialchars = att.Value.Substring(0, 5).ToLower();
@@ -225,7 +229,10 @@ namespace TokenCrawler
                 
                 for (int i = 0; i < matches.Count; i++)
                 {
-                    sb.Append("\t"+matches[i] + ": " + SubStringInform(outHTML, matches[i].Index).Replace("\n", "_").Replace("\r", "_") + "\n");
+                    string substr = SubStringInform(outHTML, matches[i].Index);
+                    //substr=Regex.Replace(substr, @"\s", "");
+                    substr = substr.Replace("\n", "").Replace("  ", "").Replace("\t", "").Replace("\r", "");
+                    sb.Append("\t"+matches[i] + ": " + substr+ "\n");
                     //did we reach max results to show ?
                     
                     if (cmdLine.MaxResults!=0 && cmdLine.MaxResults <= i+1) break;
