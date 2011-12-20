@@ -6,7 +6,7 @@ namespace TokenCrawler
     /// This class is used by Plossum Command Line package in order to manage the Command Line options
     /// </summary>
     [CommandLineManager(ApplicationName = "\nToken Crawler",
-        Copyright = "This utility will crawl the websites refered in txt file and searches for a specific token in the HMTL or in the js files used by the site")]
+        Copyright = "This utility crawls websites refered in a .txt file and searches for specific patterns in the HMTL and the js files used by the site")]
     class CmdLineOptions
     {
         [CommandLineOption(Description = "Displays this help text")]
