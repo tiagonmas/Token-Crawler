@@ -67,8 +67,12 @@ namespace TokenCrawler
             
             str.Append("Running with the following commands:\n");
             str.Append(String.Format("\tRegex Token: {0}\n", cmdLine.Token));
+            if (cmdLine.Url != null) //are we searching for one url or for all urls in a file ?
+            { str.Append(String.Format("\tUrl: {0}\n", cmdLine.Url)); }
+            else
+            { str.Append(String.Format("\tFile: {0}\n", cmdLine.File)); }
+
             str.Append(String.Format("\tIgnoreCase: {0}\n", cmdLine.IgnoreCase));
-            str.Append(String.Format("\tFile: {0}\n", cmdLine.File));
             str.Append(String.Format("\tVerbose Level: {0}\n", cmdLine.Verbose));
             str.Append(String.Format("\tOutput Results to: {0}\n", output.FileName));
             str.Append(String.Format("\tMaxResults: {0}\n", cmdLine.MaxResults));
@@ -83,13 +87,23 @@ namespace TokenCrawler
 
             try
             {
-                
-                findings= new Dictionary<string, string>();
+                string[] sites; //sites to be crawled
 
-                string[] sites = GetSitesFromFile(cmdLine.File);
-                sites = RemoveCommentsAndPrepURL(sites); //this could be improved. 
-                crawltotal=sites.Count();
-                Console.WriteLine(String.Format("Started to crawl {0} sites\n",crawltotal));
+                findings= new Dictionary<string, string>();
+                if (cmdLine.Url != null) //are we searching for one url or for all urls in a file ?
+                { 
+                    sites = new string[] { PrepURL(cmdLine.Url.ToString()) }; 
+                    crawltotal = 1;
+                    Console.WriteLine(String.Format("Crawling {0}\n", cmdLine.Url));
+                }
+                else
+                {
+                    sites = GetSitesFromFile(cmdLine.File);
+                    sites = RemoveCommentsAndPrepURL(sites); //this could be improved. 
+                    crawltotal = sites.Count();
+                    Console.WriteLine(String.Format("Started to crawl {0} sites\n", crawltotal));
+                }
+                
                 foreach (string siteUrl in sites)
                 {
                     crawlnum++; //increase crawl counter.
@@ -256,9 +270,9 @@ namespace TokenCrawler
                     
                     //is the match something "simple" to show to the user?
                     if (cmdLine.Token.Contains(matches[i].ToString()))
-                    { sb.Append("\t" + i + ": " + matches[i] + "\t " + substr + "\n"); }
+                    { sb.Append("\t" + i+1 + ": " + matches[i] + "\t " + substr + "\n"); }
                     else
-                    { sb.Append("\t" + i + ": " + cmdLine.Token + "\t " + substr + "\n"); }
+                    { sb.Append("\t" + i+1 + ": " + cmdLine.Token + "\t " + substr + "\n"); }
                     //did we reach max results to show ?
                     
                     if (cmdLine.MaxResults!=0 && cmdLine.MaxResults <= i+1) break;
