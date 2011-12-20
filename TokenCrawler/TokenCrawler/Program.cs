@@ -165,7 +165,7 @@ namespace TokenCrawler
 
                 #region DumpFoundFiles
                 ///Dump found files
-                Console.ForegroundColor = ConsoleColor.Blue;
+                Console.ForegroundColor = ConsoleColor.Yellow;
                 if (findings.Count == 0)
                 { Console.WriteLine("\n\n{0} was not found on any of the sites searched:\n", cmdLine.Token); Console.ResetColor();}
                 else
@@ -243,23 +243,27 @@ namespace TokenCrawler
             bool found = regexToken.IsMatch(outHTML);
             if (found)
             {
+                //Show what was found
+
                 StringBuilder sb = new StringBuilder();
                 MatchCollection matches = regexToken.Matches(outHTML);
-
                 
                 for (int i = 0; i < matches.Count; i++)
                 {
                     string substr = SubStringInform(outHTML, matches[i].Index);
                     //substr=Regex.Replace(substr, @"\s", "");
                     substr = substr.Replace("\n", "").Replace("  ", "").Replace("\t", "").Replace("\r", "");
-                    sb.Append("\t"+matches[i] + ": " + substr+ "\n");
+                    
+                    //is the match something "simple" to show to the user?
+                    if (cmdLine.Token.Contains(matches[i].ToString()))
+                    { sb.Append("\t" + i + ": " + matches[i] + "\t " + substr + "\n"); }
+                    else
+                    { sb.Append("\t" + i + ": " + cmdLine.Token + "\t " + substr + "\n"); }
                     //did we reach max results to show ?
                     
                     if (cmdLine.MaxResults!=0 && cmdLine.MaxResults <= i+1) break;
                 }
                 excert = sb.ToString();
-
-                //excert = SubStringInform(outHTML, token);
 
                 Console.ForegroundColor = ConsoleColor.Green;
                 if (cmdLine.MaxResults > matches.Count)
