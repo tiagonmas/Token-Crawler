@@ -65,7 +65,7 @@ namespace TokenCrawler
             #region ShowInitialParametersinConsoleAndFile
             StringBuilder str = new StringBuilder();
             
-            str.Append("Running tool with the following commands:\n");
+            str.Append("Running with the following commands:\n");
             str.Append(String.Format("\tRegex Token: {0}\n", cmdLine.Token));
             str.Append(String.Format("\tIgnoreCase: {0}\n", cmdLine.IgnoreCase));
             str.Append(String.Format("\tFile: {0}\n", cmdLine.File));
@@ -87,13 +87,14 @@ namespace TokenCrawler
                 findings= new Dictionary<string, string>();
 
                 string[] sites = GetSitesFromFile(cmdLine.File);
+                sites = RemoveCommentsAndPrepURL(sites); //this could be improved. 
                 crawltotal=sites.Count();
-                Console.WriteLine(String.Format("Started crawling {0} sites\n",crawltotal));
+                Console.WriteLine(String.Format("Started to crawl {0} sites\n",crawltotal));
                 foreach (string siteUrl in sites)
                 {
-                    crawlnum++;
-                    var url = PrepURL(siteUrl); //check for http
-                    Inform(String.Format("\nCrawling ({0}/{1}) {2} \n", crawlnum, crawltotal,url), 1);
+                    crawlnum++; //increase crawl counter.
+
+                    Inform(String.Format("\nCrawling ({0}/{1}) {2} \n", crawlnum, crawltotal, siteUrl), 1);
 
                     //show something is happening if we are in verbose=0 mode
                     if (cmdLine.Verbose == 0) Console.Write(".");
@@ -101,7 +102,7 @@ namespace TokenCrawler
                     try
                     {
                         string html, excert;
-                        if (!DownloadAndFindToken(url, cmdLine.Token, out html, out excert))
+                        if (!DownloadAndFindToken(siteUrl, cmdLine.Token, out html, out excert))
                         { //it was not found on the main HTML page, check all referred scripts
 
                             #region CheckInternalScripts
@@ -118,14 +119,14 @@ namespace TokenCrawler
 
                                 //Console.Write(script.Value);
                                 HtmlAttribute att = script.Attributes["src"];
-                                if (att!=null && !String.IsNullOrEmpty(att.Value))
+                                if (att != null && !String.IsNullOrEmpty(att.Value))
                                 {
                                     //check the absolute path to the script
                                     string initialchars = att.Value.Substring(0, 5).ToLower();
                                     if (initialchars.StartsWith("http") || initialchars.StartsWith("https")) script_url = att.Value;
                                     else if (att.Value.StartsWith("//")) script_url = "http:" + att.Value;
-                                    else if (att.Value.StartsWith("/")) script_url = url + att.Value;
-                                    else script_url = url + "/" + att.Value; //TO DO: take care of relative urls
+                                    else if (att.Value.StartsWith("/")) script_url = siteUrl + att.Value;
+                                    else script_url = siteUrl + "/" + att.Value; //TO DO: take care of relative urls
 
                                     Inform(String.Format("\t{0}\n", script_url), 2);
                                     try
@@ -150,7 +151,7 @@ namespace TokenCrawler
                             #endregion
 
                         }
-                        else { RecordFoundSite(url, excert); }
+                        else { RecordFoundSite(siteUrl, excert); }
 
                     }
                     catch (System.Net.WebException exc)
@@ -159,6 +160,7 @@ namespace TokenCrawler
                         Console.WriteLine("Error. Unable to open site {0}", exc.Message);
                         Console.ResetColor();
                     }
+                    
                 }
 
                 #region DumpFoundFiles
@@ -195,8 +197,26 @@ namespace TokenCrawler
         }
 
 
-        #region HelpFunctions
 
+
+        #region HelpFunctions
+        /// <summary>
+        /// Remove comments from list of sites, and prepare urls.
+        /// </summary>
+        /// <param name="sites"></param>
+        /// <returns></returns>
+        private static string[] RemoveCommentsAndPrepURL(string[] sites)
+        {   
+            List<string> newsites=new List<string>(sites.Count());
+            foreach (string site in sites)
+            {
+                string str=site.Trim();
+                if(!str.StartsWith("///")) //if it is not a comment
+                {newsites.Add(PrepURL(site));}
+
+            }
+            return newsites.ToArray<string>();
+        }
         private static void RecordFoundSite(string url, string excert)
         {
             try
@@ -300,9 +320,9 @@ namespace TokenCrawler
         {
 
             if (siteUrl.Contains("http://") || siteUrl.Contains("https://"))
-                return siteUrl.Trim();
+                return siteUrl;
             else
-                return "http://" + siteUrl.Trim();
+                return "http://" + siteUrl;
         }
 
         /// <summary>

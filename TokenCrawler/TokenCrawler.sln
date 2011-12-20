@@ -3,6 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TokenCrawler", "TokenCrawler\TokenCrawler.csproj", "{3446FDCD-6555-40DD-9C6B-91A642A8B7B5}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestSites", "TestSites", "{60116C12-1497-40F6-8BC7-78FE6D37A468}"
+	ProjectSection(SolutionItems) = preProject
+		TestSites\canvas.txt = TestSites\canvas.txt
+		TestSites\ie9pin.txt = TestSites\ie9pin.txt
+		TestSites\readme.txt = TestSites\readme.txt
+		TestSites\statcounter.txt = TestSites\statcounter.txt
+		TestSites\test.bat = TestSites\test.bat
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
 		SccNumberOfProjects = 2
