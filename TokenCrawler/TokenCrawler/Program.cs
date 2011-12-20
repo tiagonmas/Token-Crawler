@@ -298,10 +298,11 @@ namespace TokenCrawler
         /// <returns></returns>
         private static string PrepURL(string siteUrl)
         {
+
             if (siteUrl.Contains("http://") || siteUrl.Contains("https://"))
-                return siteUrl;
+                return siteUrl.Trim();
             else
-                return "http://" + siteUrl;
+                return "http://" + siteUrl.Trim();
         }
 
         /// <summary>
