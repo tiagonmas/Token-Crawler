@@ -5,11 +5,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TokenCrawler", "TokenCrawle
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestSites", "TestSites", "{60116C12-1497-40F6-8BC7-78FE6D37A468}"
 	ProjectSection(SolutionItems) = preProject
+		TestSites\alexa1000.txt = TestSites\alexa1000.txt
 		TestSites\canvas.txt = TestSites\canvas.txt
 		TestSites\ie9pin.txt = TestSites\ie9pin.txt
 		TestSites\readme.txt = TestSites\readme.txt
 		TestSites\statcounter.txt = TestSites\statcounter.txt
-		TestSites\test.bat = TestSites\test.bat
+		TestSites\x-ua-compatible.txt = TestSites\x-ua-compatible.txt
 	EndProjectSection
 EndProject
 Global
