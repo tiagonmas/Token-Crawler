@@ -1,5 +1,7 @@
-TokenCrawler.exe -token "(\<canvas|createElement\('canvas'\))" -IgnoreCase -File canvas.txt
+TokenCrawler.exe /token tostring /url www.sapo.pt
 pause
-TokenCrawler.exe -token "(msapplication|pinify)" -IgnoreCase -File ie9pin.txt
+TokenCrawler.exe /token "(\<canvas|createElement\('canvas'\))" /File canvas.txt
 pause
-TokenCrawler.exe -token statcounter -IgnoreCase -File statcounter.txt
+TokenCrawler.exe /token "(msapplication|pinify)" /File ie9pin.txt
+pause
+TokenCrawler.exe /token statcounter /File statcounter.txt

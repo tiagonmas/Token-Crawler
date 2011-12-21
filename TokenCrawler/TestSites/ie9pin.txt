@@ -1,6 +1,6 @@
 /// Sample file to look for Ie9 pinning capabilities
 /// Sample Execution:
-///			TokenCrawler.exe -token "(msapplication|pinify)" -IgnoreCase -File ie9pin.txt
+///			TokenCrawler.exe /token "(msapplication|pinify)" /File ie9pin.txt
 /// Results:
 ///			At test time first 3 returned matches and last didn't
 http://www.buildwindows.com
