@@ -1,6 +1,6 @@
 /// Sample file to look for statcounter.
 /// Sample Execution:
-///			TokenCrawler.exe -token statcounter -IgnoreCase -File statcounter.txt
+///			TokenCrawler.exe /token statcounter /File statcounter.txt
 /// Results:
 ///			At test time first 3 returned matches and last didn't
 http://4shared.com

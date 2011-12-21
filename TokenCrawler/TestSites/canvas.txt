@@ -1,6 +1,6 @@
 /// Sample file to look for HTML5 canvas element.
 /// Sample Execution:
-///			TokenCrawler.exe -token "(\<canvas|createElement\('canvas'\))" -IgnoreCase -File canvas.txt
+///			TokenCrawler.exe /token "(\<canvas|createElement\('canvas'\))" /File canvas.txt
 /// Results:
 ///			At test time first 3 returned matches and last didn't
 http://www.nevermindthebullets.com/strip.html#1-1
