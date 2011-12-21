@@ -15,7 +15,7 @@ namespace TokenCrawler
         public Output()
         {
             // create a writer and open the file
-            _fileName = "TokenCrawler" + DateTime.Now.ToShortDateString().Replace("-", "_") + "_" + DateTime.Now.ToShortTimeString().Replace(":", "_") + ".txt";
+            _fileName = "TokenCrawler" + DateTime.Now.ToShortDateString().Replace("-", "_") + "_" + DateTime.Now.ToLongTimeString().Replace(":", "_") + ".txt";
            tw = new StreamWriter(_fileName);
 
         }
