@@ -102,7 +102,9 @@
   <ItemGroup>
     <None Include="packages.config" />
     <None Include="Properties\app.manifest" />
-    <None Include="test.bat" />
+    <None Include="test.bat">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="TokenCrawler_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
