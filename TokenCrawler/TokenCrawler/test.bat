@@ -6,4 +6,4 @@ TokenCrawler.exe /token "(msapplication|pinify)" /File TestSites/ie9pin.txt
 pause
 TokenCrawler.exe /token statcounter /File TestSites/statcounter.txt
 pause
-TokenCrawler.exe /token x-ua-compatible /File TestSites/x-ua-compatible.txt
+TokenCrawler.exe /token x-ua-compatible /headers /File TestSites/x-ua-compatible.txt
