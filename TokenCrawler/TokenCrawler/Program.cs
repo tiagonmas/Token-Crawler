@@ -239,7 +239,7 @@ namespace TokenCrawler
                 findings.Add(url, excert);
             }
             catch(System.ArgumentException){}; //do nothing if it was already in the dictionary
-            output.WriteLine(String.Format("{0}\t{1}", url, excert));
+            output.WriteLine(String.Format("{0}\n{1}", url, excert));
         }
 
         /// <summary>
