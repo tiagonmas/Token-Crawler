@@ -72,6 +72,7 @@ namespace TokenCrawler
             else
             { str.Append(String.Format("\tFile: {0}\n", cmdLine.File)); }
 
+            str.Append(String.Format("\tFind in HTTP Headers: {0}\n", cmdLine.Headers));
             str.Append(String.Format("\tIgnoreCase: {0}\n", cmdLine.IgnoreCase));
             str.Append(String.Format("\tVerbose Level: {0}\n", cmdLine.Verbose));
             str.Append(String.Format("\tOutput Results to: {0}\n", output.FileName));
@@ -115,8 +116,8 @@ namespace TokenCrawler
 
                     try
                     {
-                        string html, excert;
-                        if (!DownloadAndFindToken(siteUrl, cmdLine.Token, out html, out excert))
+                        string html;
+                        if (!DownloadAndFindToken(siteUrl, cmdLine.Token,"HTML Body", out html))
                         { //it was not found on the main HTML page, check all referred scripts
 
                             #region CheckInternalScripts
@@ -145,9 +146,8 @@ namespace TokenCrawler
                                     Inform(String.Format("\t{0}\n", script_url), 2);
                                     try
                                     {
-                                        if (DownloadAndFindToken(script_url, cmdLine.Token, out html, out excert))
+                                        if (DownloadAndFindToken(script_url, cmdLine.Token,"JS File", out html))
                                         {
-                                            RecordFoundSite(script_url, excert);
                                             break;
                                         }
                                     }
@@ -165,7 +165,7 @@ namespace TokenCrawler
                             #endregion
 
                         }
-                        else { RecordFoundSite(siteUrl, excert); }
+                     
 
                     }
                     catch (System.Net.WebException exc)
@@ -231,7 +231,8 @@ namespace TokenCrawler
             }
             return newsites.ToArray<string>();
         }
-        private static void RecordFoundSite(string url, string excert)
+
+        private static void RegisterFoundSite(string url, string excert)
         {
             try
             {
@@ -240,6 +241,7 @@ namespace TokenCrawler
             catch(System.ArgumentException){}; //do nothing if it was already in the dictionary
             output.WriteLine(String.Format("{0}\t{1}", url, excert));
         }
+
         /// <summary>
         /// Download the html of a given url and check if it contains a token
         /// </summary>
@@ -247,49 +249,97 @@ namespace TokenCrawler
         /// <param name="token"></param>
         /// <param name="outHTML"></param>
         /// <returns></returns>
-        private static bool DownloadAndFindToken(string url,string token, out string outHTML, out string excert)
+        private static bool DownloadAndFindToken(string url,string token,string area, out string outHTML)
         {
-            excert = null;
+            string excertHeaders=String.Empty;
+            string excertBody = String.Empty;
+            bool foundHeader=false, foundBody=false;
+
             WebClient client = new WebClient();
+            outHTML = string.Empty;
+
             //some urls have spaces and browsers support. Need to take spaces out of urls
             url=url.Replace(" ", "");
-            outHTML = client.DownloadString(url);
-            bool found = regexToken.IsMatch(outHTML);
-            if (found)
+            try
+            {
+                outHTML = client.DownloadString(url);
+            }
+            catch (System.ArgumentException exc)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Inform(String.Format("\tError loading {0} : {1}\n", url,exc.Message), 1);
+                Console.ResetColor();
+                return false;
+            }
+
+            if (cmdLine.Headers) //Search HTTP headers ?
+            {
+                string headers = client.ResponseHeaders.ToString();
+                foundHeader = regexToken.IsMatch(headers);
+                if (foundHeader)
+                {
+                    //Show what was found
+                    excertHeaders = ExtractMatches(headers, "HTTP Header", ConsoleColor.DarkYellow);
+
+
+                }
+            }
+            
+            foundBody = regexToken.IsMatch(outHTML);
+            if (foundBody)
             {
                 //Show what was found
-
-                StringBuilder sb = new StringBuilder();
-                MatchCollection matches = regexToken.Matches(outHTML);
-                
-                for (int i = 0; i < matches.Count; i++)
-                {
-                    string substr = SubStringInform(outHTML, matches[i].Index);
-                    //substr=Regex.Replace(substr, @"\s", "");
-                    substr = substr.Replace("\n", "").Replace("  ", "").Replace("\t", "").Replace("\r", "");
-                    
-                    //is the match something "simple" to show to the user?
-                    if (cmdLine.Token.Contains(matches[i].ToString()))
-                    { sb.Append("\t" + i+1 + ": " + matches[i] + "\t " + substr + "\n"); }
-                    else
-                    { sb.Append("\t" + i+1 + ": " + cmdLine.Token + "\t " + substr + "\n"); }
-                    //did we reach max results to show ?
-                    
-                    if (cmdLine.MaxResults!=0 && cmdLine.MaxResults <= i+1) break;
-                }
-                excert = sb.ToString();
-
-                Console.ForegroundColor = ConsoleColor.Green;
-                if (cmdLine.MaxResults > matches.Count)
-                { Inform("Token Found in " + matches.Count + " places:" + "\n"+excert, 1); }
-                else
-                { Inform("Token Found in " + matches.Count + " places. Showing only " + cmdLine.MaxResults + "\n" + excert, 1); }
-                Console.ResetColor();
-                Console.Write("\n\n");
+                excertBody=ExtractMatches(outHTML,area,ConsoleColor.Green);
             }
             client = null; //release client
+
+            //register what we found
+            if (foundHeader || foundBody)
+            {
+                if (foundHeader)
+                { RegisterFoundSite(url, "\nHTTP Header:"+excertHeaders + "\n"+ excertBody); }
+                else //found only in body
+                { RegisterFoundSite(url, excertBody); }
+            }
+            return foundHeader||foundBody;
+        }
+
+        /// <summary>
+        /// Extract RegEx matches in a way to show to user
+        /// </summary>
+        /// <param name="html"></param>
+        /// <returns></returns>
+        private static string ExtractMatches(string html,string area, ConsoleColor color)
+        {
+            StringBuilder sb = new StringBuilder();
+            MatchCollection matches = regexToken.Matches(html);
+
+            for (int i = 0; i < matches.Count; i++)
+            {
+                string substr = SubStringInform(html, matches[i].Index);
+                //substr=Regex.Replace(substr, @"\s", "");
+                substr = substr.Replace("\n", "").Replace("  ", "").Replace("\t", "").Replace("\r", "");
+
+                //is the match something "simple" to show to the user?
+                if (cmdLine.Token.Contains(matches[i].ToString()))
+                { sb.Append("\t" + (i + 1) + ": " + matches[i] + "\t " + substr + "\n"); }
+                else
+                { sb.Append("\t" + (i+1)  + ": " + cmdLine.Token + "\t " + substr + "\n"); }
+                //did we reach max results to show ?
+
+                if (cmdLine.MaxResults != 0 && cmdLine.MaxResults <= i + 1) break;
+            }
             
-            return found;
+
+            Console.ForegroundColor = color;
+            if (cmdLine.MaxResults > matches.Count)
+            { Inform("Token Found in " + area+" in "+ matches.Count + " places:" + "\n" + sb.ToString(), 1); }
+            else
+            { Inform("Token Found in " + area+" in "+matches.Count + " places. Showing only " + cmdLine.MaxResults + "\n" + sb.ToString(), 1); }
+            Console.ResetColor();
+            Console.Write("\n");
+
+            return sb.ToString();
         }
 
         /// <summary>

@@ -49,7 +49,7 @@ namespace TokenCrawler
             }
         }
 
-        [CommandLineOption(Description = "Specifies the token (can be defined as a regular expression) to be searched for in the crawled files (default is false)", 
+        [CommandLineOption(Description = "Specifies the token (can be defined as a regular expression) to be searched for in the crawled files (default is true)", 
             GroupId = "options",MinOccurs = 0)]
         public bool IgnoreCase
         {
@@ -57,6 +57,17 @@ namespace TokenCrawler
             set
             {
                 mIgnoreCase = value;
+            }
+        }
+
+        [CommandLineOption(Description = "find the pattern on the Response Headers of the HTTP request ? defaults to false",
+            GroupId = "options")]
+        public bool Headers
+        {
+            get { return mHeaders; }
+            set
+            {
+                mHeaders = value;
             }
         }
 
@@ -98,7 +109,8 @@ namespace TokenCrawler
         private string mOutput = "";
         private int mMaxResults = 5;
         private int mVerbose=1;
-        private bool mIgnoreCase = false;
+        private bool mIgnoreCase = true;
+        private bool mHeaders = false;
     }
 
 }
