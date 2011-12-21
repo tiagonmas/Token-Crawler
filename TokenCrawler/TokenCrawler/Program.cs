@@ -66,17 +66,17 @@ namespace TokenCrawler
             StringBuilder str = new StringBuilder();
             
             str.Append("Running with the following commands:\n");
-            str.Append(String.Format("\tRegex Token: {0}\n", cmdLine.Token));
+            str.Append(String.Format("\tRegex Token:\t{0}\n", cmdLine.Token));
             if (cmdLine.Url != null) //are we searching for one url or for all urls in a file ?
-            { str.Append(String.Format("\tUrl: {0}\n", cmdLine.Url)); }
+            { str.Append(String.Format("\tUrl:\t{0}\n", cmdLine.Url)); }
             else
-            { str.Append(String.Format("\tFile: {0}\n", cmdLine.File)); }
+            { str.Append(String.Format("\tFile:\t{0}\n", cmdLine.File)); }
 
-            str.Append(String.Format("\tFind in HTTP Headers: {0}\n", cmdLine.Headers));
-            str.Append(String.Format("\tIgnoreCase: {0}\n", cmdLine.IgnoreCase));
-            str.Append(String.Format("\tVerbose Level: {0}\n", cmdLine.Verbose));
-            str.Append(String.Format("\tOutput Results to: {0}\n", output.FileName));
-            str.Append(String.Format("\tMaxResults: {0}\n", cmdLine.MaxResults));
+            str.Append(String.Format("\tFind in HTTP Headers:\t{0}\n", cmdLine.Headers));
+            str.Append(String.Format("\tIgnoreCase:\t{0}\n", cmdLine.IgnoreCase));
+            str.Append(String.Format("\tVerbose Level:\t{0}\n", cmdLine.Verbose));
+            str.Append(String.Format("\tOutput Results to:\t{0}\n", output.FileName));
+            str.Append(String.Format("\tMaxResults:\t{0}\n", cmdLine.MaxResults));
 
             output.WriteLine(str.ToString());
             Console.WriteLine(str.ToString());
