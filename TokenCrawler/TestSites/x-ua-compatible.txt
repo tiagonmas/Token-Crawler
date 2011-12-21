@@ -1,0 +1,9 @@
+/// Sample file to look for statcounter.
+/// Sample Execution:
+///			TokenCrawler.exe /token x-ua-compatible /File x-ua-compatible.txt
+/// Results:
+///			First returns in HTTP Header, second and third in body.
+http://go.com
+http://bbc.co.uk
+http://about.com
+http://google.ca
