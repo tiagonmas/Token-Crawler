@@ -6,7 +6,7 @@ namespace TokenCrawler
     /// This class is used by Plossum Command Line package in order to manage the Command Line options
     /// </summary>
     [CommandLineManager(ApplicationName = "\nToken Crawler",
-        Copyright = "This utility crawls websites and searches for specific patterns in the HMTL and the js files used by the site(s)",
+        Copyright = "This utility crawls websites and searches for specific patterns in the HMTL and the js files used by the site(s). Check http://tokencrawler.codeplex.com. Run TokenCrawler /help for options.",
         EnabledOptionStyles = OptionStyles.Group | OptionStyles.Windows)]
     [CommandLineOptionGroup("input", Name = "Input (chose one)",
        Require = OptionGroupRequirement.ExactlyOne)]
