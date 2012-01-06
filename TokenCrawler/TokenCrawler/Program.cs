@@ -56,7 +56,8 @@ namespace TokenCrawler
             }
             catch (System.Exception exc)
             {
-                Console.WriteLine("Error parsing Token Regular Expression: " + cmdLine.Token + ".\nDetails:" + exc.Message);
+                Console.WriteLine("Error parsing Token Regular Expression: {0}.", cmdLine.Token);
+                Console.WriteLine("Details:", exc.Message);
                 return -1;
             }
             
@@ -94,21 +95,21 @@ namespace TokenCrawler
                 { 
                     sites = new string[] { PrepURL(cmdLine.Url.ToString()) }; 
                     crawltotal = 1;
-                    Console.WriteLine(String.Format("Crawling {0}\n", cmdLine.Url));
+                    Console.WriteLine("Crawling {0}{1}", cmdLine.Url, Environment.NewLine);
                 }
                 else
                 {
                     sites = GetSitesFromFile(cmdLine.File);
                     sites = RemoveCommentsAndPrepURL(sites); //this could be improved. 
                     crawltotal = sites.Count();
-                    Console.WriteLine(String.Format("Started to crawl {0} sites\n", crawltotal));
+                    Console.WriteLine("Started to crawl {0} sites{1}", crawltotal, Environment.NewLine);
                 }
                 
                 foreach (string siteUrl in sites)
                 {
                     crawlnum++; //increase crawl counter.
 
-                    Inform(String.Format("\nCrawling ({0}/{1}) {2} \n", crawlnum, crawltotal, siteUrl), 1);
+                    Inform(String.Format("{3}Crawling ({0}/{1}) {2} {3}", crawlnum, crawltotal, siteUrl, Environment.NewLine), 1);
 
                     //show something is happening if we are in verbose=0 mode
                     if (cmdLine.Verbose == 0) Console.Write(".");
@@ -142,7 +143,7 @@ namespace TokenCrawler
                                     else if (att.Value.StartsWith("/")) script_url = siteUrl + att.Value;
                                     else script_url = siteUrl + "/" + att.Value; //TO DO: take care of relative urls
 
-                                    Inform(String.Format("\t{0}\n", script_url), 2);
+                                    Inform(String.Format("{0}{1}{2}", Tab, script_url, Environment.NewLine), 2);
                                     try
                                     {
                                         if (DownloadAndFindToken(script_url, cmdLine.Token,"JS File", cmdLine.UserAgent, out html))
@@ -153,7 +154,7 @@ namespace TokenCrawler
                                     catch (System.Exception)
                                     {
                                         Console.ForegroundColor = ConsoleColor.Red;
-                                        Inform(String.Format("\tError loading {0}\n", script_url), 1);
+                                        Inform(String.Format("{0}Error loading {1}{2}", Tab, script_url, Environment.NewLine), 1);
                                         Console.ResetColor();
                                     }
                                 }
@@ -164,8 +165,6 @@ namespace TokenCrawler
                             #endregion
 
                         }
-                     
-
                     }
                     catch (System.Net.WebException exc)
                     {
@@ -180,14 +179,14 @@ namespace TokenCrawler
                 ///Dump found files
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 if (findings.Count == 0)
-                { Console.WriteLine("\n\n{0} was not found on any of the sites searched:\n", cmdLine.Token); Console.ResetColor();}
+                { Console.WriteLine("{1}{1}{0} was not found on any of the sites searched:{1}", cmdLine.Token, Environment.NewLine); Console.ResetColor();}
                 else
-                { 
-                    Console.WriteLine("\n\n\"{0}\" was found on the following {1} sites:\n", cmdLine.Token, findings.Count); 
+                {
+                    Console.WriteLine("{2}{2}\"{0}\" was found on the following {1} sites:{2}", cmdLine.Token, findings.Count, Environment.NewLine); 
                     Console.ResetColor();
                     foreach (string foundit in findings.Keys)
                     {
-                        Console.WriteLine("\t"+foundit);
+                        Console.WriteLine("{0}{1}",Tab, foundit);
                     }
 
                 }
@@ -195,13 +194,12 @@ namespace TokenCrawler
             }
             catch (System.IO.FileNotFoundException exc)
             {
-                Console.WriteLine("Error. Unable to open file {0}.\n",  exc.Message);
+                Console.WriteLine("Error. Unable to open file {0}.{1}",  exc.Message, Environment.NewLine);
                 
             }
-
             catch (Exception exc)
             {
-                Console.WriteLine("Error: {0}\n",exc.ToString());
+                Console.WriteLine("Error: {0}{1}",exc.ToString(), Environment.NewLine);
             }
 
             #endregion
@@ -238,7 +236,7 @@ namespace TokenCrawler
                 findings.Add(url, excert);
             }
             catch(System.ArgumentException){}; //do nothing if it was already in the dictionary
-            output.WriteLine(String.Format("{0}\n{1}", url, excert));
+            output.WriteLine(String.Format("{0}{2}{1}", url, excert, Environment.NewLine));
         }
 
         /// <summary>
@@ -268,7 +266,7 @@ namespace TokenCrawler
             catch (System.ArgumentException exc)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Inform(String.Format("\tError loading {0} : {1}\n", url,exc.Message), 1);
+                Inform(String.Format("\tError loading {0} : {1}{2}", url,exc.Message,Environment.NewLine), 1);
                 Console.ResetColor();
                 return false;
             }
@@ -298,7 +296,7 @@ namespace TokenCrawler
             if (foundHeader || foundBody)
             {
                 if (foundHeader)
-                { RegisterFoundSite(url, "\nHTTP Header:"+excertHeaders + "\n"+ excertBody); }
+                { RegisterFoundSite(url, string.Format("{2}HTTP Header:{0}{2}{1}",excertHeaders, excertBody, Environment.NewLine)); }
                 else //found only in body
                 { RegisterFoundSite(url, excertBody); }
             }
@@ -319,13 +317,17 @@ namespace TokenCrawler
             {
                 string substr = SubStringInform(html, matches[i].Index);
                 //substr=Regex.Replace(substr, @"\s", "");
-                substr = substr.Replace("\n", "").Replace("  ", "").Replace("\t", "").Replace("\r", "");
+                substr = substr.Replace("\n", "").Replace("  ", "").Replace(Tab, "").Replace("\r", "");
 
                 //is the match something "simple" to show to the user?
                 if (cmdLine.Token.Contains(matches[i].ToString()))
-                { sb.Append("\t" + (i + 1) + ": " + matches[i] + "\t " + substr + "\n"); }
+                {
+                    sb.AppendLine(Tab + (i + 1) + ": " + matches[i] + Tab + substr); 
+                }
                 else
-                { sb.Append("\t" + (i+1)  + ": " + cmdLine.Token + "\t " + substr + "\n"); }
+                { 
+                    sb.AppendLine(Tab + (i+1)  + ": " + cmdLine.Token + Tab + substr); 
+                }
                 //did we reach max results to show ?
 
                 if (cmdLine.MaxResults != 0 && cmdLine.MaxResults <= i + 1) break;
@@ -334,11 +336,11 @@ namespace TokenCrawler
 
             Console.ForegroundColor = color;
             if (cmdLine.MaxResults > matches.Count)
-            { Inform("Token Found in " + area+" in "+ matches.Count + " places:" + "\n" + sb.ToString(), 1); }
+            { Inform(Environment.NewLine + "Token Found in " + area+" in "+ matches.Count + " places:" + Environment.NewLine + sb.ToString(), 1); }
             else
-            { Inform("Token Found in " + area+" in "+matches.Count + " places. Showing only " + cmdLine.MaxResults + "\n" + sb.ToString(), 1); }
+            { Inform(Environment.NewLine + "Token Found in " + area + " in " + matches.Count + " places. Showing only " + cmdLine.MaxResults + Environment.NewLine + sb.ToString(), 1); }
             Console.ResetColor();
-            Console.Write("\n");
+            Console.WriteLine();
 
             return sb.ToString();
         }
@@ -370,13 +372,18 @@ namespace TokenCrawler
         }
 
         /// <summary>
-        /// Opens a File, reads all lines and returns the contents split by \r and \n
+        /// Opens a File, reads all lines and returns the contents split by return carriage
         /// </summary>
         /// <param name="response">The file to read</param>
 		private static string[] GetSitesFromFile(string file) {
-            char[] separator = new char[] { '\n', '\r' };
-            return new StreamReader(File.OpenRead(file)).ReadToEnd().Split(separator, StringSplitOptions.RemoveEmptyEntries);
+            var separator = new string[] {Environment.NewLine};
+            string[] sites;
+            using (var reader = new StreamReader(File.OpenRead(file)))
+            {
+                sites = reader.ReadToEnd().Split(separator, StringSplitOptions.RemoveEmptyEntries);
+            }
 
+            return sites;
 		}
 
 
