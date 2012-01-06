@@ -117,7 +117,7 @@ namespace TokenCrawler
                     try
                     {
                         string html;
-                        if (!DownloadAndFindToken(siteUrl, cmdLine.Token,"HTML Body", out html))
+                        if (!DownloadAndFindToken(siteUrl, cmdLine.Token,"HTML Body", cmdLine.UserAgent, out html))
                         { //it was not found on the main HTML page, check all referred scripts
 
                             #region CheckInternalScripts
@@ -146,7 +146,7 @@ namespace TokenCrawler
                                     Inform(String.Format("\t{0}\n", script_url), 2);
                                     try
                                     {
-                                        if (DownloadAndFindToken(script_url, cmdLine.Token,"JS File", out html))
+                                        if (DownloadAndFindToken(script_url, cmdLine.Token,"JS File", cmdLine.UserAgent, out html))
                                         {
                                             break;
                                         }
@@ -249,13 +249,15 @@ namespace TokenCrawler
         /// <param name="token"></param>
         /// <param name="outHTML"></param>
         /// <returns></returns>
-        private static bool DownloadAndFindToken(string url,string token,string area, out string outHTML)
+        private static bool DownloadAndFindToken(string url,string token,string area, string userAgent, out string outHTML)
         {
             string excertHeaders=String.Empty;
             string excertBody = String.Empty;
             bool foundHeader=false, foundBody=false;
 
             WebClient client = new WebClient();
+            client.Headers.Add("User-Agent", userAgent);
+
             outHTML = string.Empty;
 
             //some urls have spaces and browsers support. Need to take spaces out of urls
