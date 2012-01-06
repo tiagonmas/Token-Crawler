@@ -17,7 +17,7 @@ namespace TokenCrawler
         static Regex regexToken;
         static Dictionary<string, string> findings; //will contain sites that satisfy criteria, and an excert
         static Output output; //will write to file findings
-
+        const string Tab = "\t";
 
         static int Main(string[] args)
         {
@@ -41,8 +41,6 @@ namespace TokenCrawler
                 return -1;
             }
 
-            
-
             //Create output file
             if (String.IsNullOrEmpty(cmdLine.Output))
             { output = new Output(); }
@@ -65,22 +63,23 @@ namespace TokenCrawler
             #region ShowInitialParametersinConsoleAndFile
             StringBuilder str = new StringBuilder();
             
-            str.Append("Running with the following commands:\n");
-            str.Append(String.Format("\tRegex Token:\t{0}\n", cmdLine.Token));
+            str.AppendLine("Running with the following commands:");
+            str.AppendFormat("{0}Regex Token:{0}{1}{2}", Tab, cmdLine.Token, Environment.NewLine);
             if (cmdLine.Url != null) //are we searching for one url or for all urls in a file ?
-            { str.Append(String.Format("\tUrl:\t{0}\n", cmdLine.Url)); }
+            { str.AppendFormat("{0}Url:{0}{1}{2}", Tab, cmdLine.Url, Environment.NewLine); }
             else
-            { str.Append(String.Format("\tFile:\t{0}\n", cmdLine.File)); }
+            { str.AppendFormat("{0}File:{0}{1}{2}", Tab, cmdLine.File, Environment.NewLine); }
 
-            str.Append(String.Format("\tFind in HTTP Headers:\t{0}\n", cmdLine.Headers));
-            str.Append(String.Format("\tIgnoreCase:\t{0}\n", cmdLine.IgnoreCase));
-            str.Append(String.Format("\tVerbose Level:\t{0}\n", cmdLine.Verbose));
-            str.Append(String.Format("\tOutput Results to:\t{0}\n", output.FileName));
-            str.Append(String.Format("\tMaxResults:\t{0}\n", cmdLine.MaxResults));
+            str.AppendFormat("{0}Find in HTTP Headers:{0}{1}{2}", Tab, cmdLine.Headers, Environment.NewLine);
+            str.AppendFormat("{0}IgnoreCase:{0}{1}{2}", Tab, cmdLine.IgnoreCase, Environment.NewLine);
+            str.AppendFormat("{0}Verbose Level:{0}{1}{2}", Tab, cmdLine.Verbose, Environment.NewLine);
+            str.AppendFormat("{0}Output Results to:{0}{1}{2}", Tab, output.FileName, Environment.NewLine);
+            str.AppendFormat("{0}MaxResults:{0}{1}{2}", Tab, cmdLine.MaxResults, Environment.NewLine);
+            str.AppendFormat("{0}User Agent:{0}{1}{2}", Tab, cmdLine.UserAgent, Environment.NewLine);
 
             output.WriteLine(str.ToString());
             Console.WriteLine(str.ToString());
-            str = null;
+
             #endregion
             #endregion
 
