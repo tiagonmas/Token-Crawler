@@ -103,6 +103,17 @@ namespace TokenCrawler
             }
         }
 
+        [CommandLineOption(Description = "The User Agent header that will be used to crawl the sites. By default uses Internet Explorer 9 user agent", GroupId = "options")]
+        public string UserAgent
+        {
+            get { return mUserAgent; }
+            set
+            {
+                mUserAgent = value;
+            }
+        }
+
+        private string mUserAgent = "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64; Trident/5.0)";
         private string mFile;
         private string mUrl;
         private string mToken="";
