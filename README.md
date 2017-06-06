@@ -26,7 +26,7 @@ Check the Documentation page for many more execution examples (also using Regula
 2nd. Check the results on console* or on the output file (by default output file is TokenCrawler<date><time>.txt )
 
 Here is a sample execution:
-![Execution](http://download-codeplex.sec.s-msft.com/Download?ProjectName=tokencrawler&DownloadId=317065)
+![Execution](samplerun.png)
 
 You can also crawl multiple websites. Prepare a new file with one url per line.* For example sites.txt and set the /File option to point to it. Here is a sample urls you can include in your file. Check the TestSites dir on the download package for multiple sample files.
 ```
