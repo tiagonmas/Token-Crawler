@@ -1,5 +1,6 @@
 
-#Project Description
+![Token Crawler Logo](https://download-codeplex.sec.s-msft.com/Download?ProjectName=tokencrawler&amp;DownloadId=316390&amp;Build=21050)
+# Project Description
 Token Crawler is a command line utility that crawls websites and searches for a specific pattern (Regular Expression) in the HTTP Headers, the HMTL page and in the Javascript files used by the site. It will also show an excert of where the token was found. 
 
 Search engines enable us to search for content, but we cannot search for the source code like html tags, meta information, http headers or in javascript files. This tool enables us to do exactly that on one or multiple sites. 
